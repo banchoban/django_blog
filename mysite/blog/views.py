@@ -1,9 +1,18 @@
 from django.shortcuts import render, get_object_or_404
+from django.views.generic import ListView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import Post
 
 
+class PostListView(ListView):
+    queryset = Post.objects.all()  # todo fix queryset for only publishd posts
+    context_object_name = 'posts'
+    paginate_by = 3
+    template_name = './post/list.html'
+
+
+'''
 def post_list(request):
     object_list = Post.objects.all()
     paginator = Paginator(object_list, 3)  # 3 posts in each page
@@ -17,6 +26,7 @@ def post_list(request):
         # If page is out of range deliver last page of results
         posts = paginator.page(paginator.num_pages)
     return render(request, './post/list.html', {'page': page, 'posts': posts})
+'''
 
 
 def post_detail(request, year, month, day, post):
@@ -26,3 +36,4 @@ def post_detail(request, year, month, day, post):
                                    publish__month=month,
                                    publish__day=day)
     return render(request, './post/detail.html', {'post': post})
+
