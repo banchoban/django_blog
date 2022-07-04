@@ -7,7 +7,7 @@ from .forms import EmailPostForm
 
 
 class PostListView(ListView):
-    queryset = Post.objects.all()  # todo fix queryset for only publishd posts
+    queryset = Post.objects.filter(status='published')
     context_object_name = 'posts'
     paginate_by = 3
     template_name = './post/list.html'
