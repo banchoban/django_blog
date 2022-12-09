@@ -1,6 +1,6 @@
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render, get_object_or_404
-from django.views.generic import ListView
+from django.db.models import Count
 
 from taggit.models import Tag
 
@@ -17,7 +17,7 @@ class PostListView(ListView):
 
 
 def post_list(request, tag_slug=None):
-    object_list = Post.objects.all()
+    object_list = Post.published.all()
 
     tag = None
 
@@ -61,7 +61,13 @@ def post_detail(request, year, month, day, post):
     else:
         comment_form = CommentForm()
 
-    return render(request, './post/detail.html', {'post': post, 'comments': comments, 'comment_form': comment_form})
+    # Список похожих постов
+    post_tags_ids = post.tags.values_list('id', flat=True)
+    similar_posts = Post.published.filter(tags__in=post_tags_ids) \
+        .exclude(id=post.id)
+    similar_posts = similar_posts.annotate(same_tags=Count('tags')).order_by('-same_tags', '-publish')[:4]
+
+    return render(request, './post/detail.html', {'post': post, 'comments': comments, 'comment_form': comment_form, 'similar_posts': similar_posts})
 
 
 def post_share(request, post_id):  # todo set up SMTP server
